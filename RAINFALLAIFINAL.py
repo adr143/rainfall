@@ -241,7 +241,7 @@ def rainfall_logging():
                     logging.debug(f"Scaled input_data: {input_data_scaled}")
 
                     # Reshape back to the expected shape for the model
-                    input_data_scaled = input_data_scaled.reshape(1, 1, 5)  # 1 time step, 5 features
+                    input_data_scaled = input_data_scaled.reshape(1, 4, 5)  # 1 time step, 5 features
 
                     input_data_scaled = np.expand_dims(input_data_scaled, axis=0)
                     
