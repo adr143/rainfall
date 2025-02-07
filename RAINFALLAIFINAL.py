@@ -226,7 +226,10 @@ def rainfall_logging():
                         [safe_get(-7), now.hour, safe_get(-6), safe_get(-5), safe_get(-4)]
                     ])
 
+                    input_df = pd.DataFrame(input_data, columns=feature_names)
 
+                    rain_mm_column = input_df[['Rain - mm']]
+                    feature_columns = input_df.drop(columns=['Rain - mm'])
                     # Prepare input data as a DataFrame to include feature names
                     # input_data = pd.DataFrame([[
                     #     current,
