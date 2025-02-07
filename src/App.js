@@ -44,6 +44,8 @@ function App() {
   const [rainfallData, setRainfallData] = useState([]);
   const [modalOpen, setModalOpen] = useState(true);  // State to control modal visibility
 
+  const previousSensorDataRef = useRef(null);
+
   useEffect(() => {
     // Function to fetch data
     const fetchInitialData = async () => {
@@ -72,8 +74,14 @@ function App() {
         // Debugging: Log prediction data
         console.log("Prediction Data:", latestData.predictions);
   
-        // Check rainfall levels and open modal if necessary
-        checkRainfallLevel(latestData.rainfall_15min);
+        if (
+          !previousSensorDataRef.current || previousSensorDataRef.current.rainfall_15min !== latestData.rainfall_15min // If rainfall data has changed
+        ) {
+          setSensorData(latestData);
+          checkRainfallLevel(latestData.rainfall_15min);
+        }
+
+        previousSensorDataRef.current = latestData;
       } catch (error) { 
         console.error('Error fetching initial data:', error);
       }
