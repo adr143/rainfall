@@ -265,7 +265,7 @@ def rainfall_logging():
                     output = model.predict(input_data_scaled)
 
                     # Make predictions using the Keras model
-                    predicted_1hour = round(scaler_labels.inverse_transform(output.reshape(1, -1)), 4)
+                    predicted_1hour = scaler_labels.inverse_transform(output.reshape(1, -1))[0]
                     logging.debug(f"Predicted 1-hour rainfall: {predicted_1hour}")
 
                     # Ensure no negative values in predictions
