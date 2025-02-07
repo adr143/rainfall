@@ -187,21 +187,28 @@ def rainfall_logging():
                 if log_15min:
                     logging.info(f"Logging 15-minute rainfall at {now}: {rainfall_15min} mm")
                     cumulative_15min_rainfall.append(rainfall_15min)  # Store the 15-minute cumulative rainfall
-                    if len(cumulative_15min_rainfall) > 4:
+                    if len(cumulative_15min_rainfall) > 8:
                         cumulative_15min_rainfall.pop(0)  # Keep only the last 4 data points
 
                 if log_1hour:
                     logging.info(f"Logging 1-hour rainfall at {now}: {rainfall_1hour} mm")
 
                 # Prepare input data for the model
-                if len(cumulative_15min_rainfall) == 4:  # Ensure we have enough data points for lagged features
+                if len(cumulative_15min_rainfall) >= 4:  # Ensure we have enough data points for lagged features
                     logging.debug("Preparing input data for the model")
 
+                    rainfall_series = pd.Series(cumulative_15min_rainfall)
+
+                    lags = rainfall_series.iloc[-4:].values
+
+                    current, lag3, lag2, lag1 = lags  
+
+
                     # Prepare lagged features using the last four 15-minute cumulative rainfall amounts
-                    lag1 = cumulative_15min_rainfall[-1]
-                    lag2 = cumulative_15min_rainfall[-2]
-                    lag3 = cumulative_15min_rainfall[-3]
-                    current = cumulative_15min_rainfall[-4]
+                    # lag1 = cumulative_15min_rainfall[-1]
+                    # lag2 = cumulative_15min_rainfall[-2]
+                    # lag3 = cumulative_15min_rainfall[-3]
+                    # current = cumulative_15min_rainfall[-4]
 
                     # Debug logging for input data
                     logging.debug(f"Current: {current}, Lag1: {lag1}, Lag2: {lag2}, Lag3: {lag3}")
@@ -209,14 +216,25 @@ def rainfall_logging():
                     # Define the feature names
                     feature_names = ['Rain - mm', 'hour', 'Rain - mm lag1', 'Rain - mm lag2', 'Rain - mm lag3']
 
+                    def safe_get(index):
+                        return cumulative_15min_rainfall[index] if index >= -len(cumulative_15min_rainfall) else 0.0
+
+                    input_data = np.array([
+                        [safe_get(-4), now.hour, safe_get(-3), safe_get(-2), safe_get(-1)],
+                        [safe_get(-5), now.hour, safe_get(-4), safe_get(-3), safe_get(-2)],
+                        [safe_get(-6), now.hour, safe_get(-5), safe_get(-4), safe_get(-3)],
+                        [safe_get(-7), now.hour, safe_get(-6), safe_get(-5), safe_get(-4)]
+                    ])
+
+
                     # Prepare input data as a DataFrame to include feature names
-                    input_data = pd.DataFrame([[
-                        current,
-                        now.hour,
-                        lag1,
-                        lag2,
-                        lag3
-                    ]], columns=feature_names)
+                    # input_data = pd.DataFrame([[
+                    #     current,
+                    #     now.hour,
+                    #     lag1,
+                    #     lag2,
+                    #     lag3
+                    # ]], columns=feature_names)
 
                     # Scale the input data
                     input_data_scaled = scaler_features.transform(input_data)
@@ -225,12 +243,16 @@ def rainfall_logging():
                     # Reshape back to the expected shape for the model
                     input_data_scaled = input_data_scaled.reshape(1, 1, 5)  # 1 time step, 5 features
 
+                    input_data_scaled = np.expand_dims(input_data_scaled, axis=0)
+                    
                     # Duplicate the 1 time step to create a sequence of 4 time steps
-                    input_data_scaled = np.repeat(input_data_scaled, 4, axis=1)
+                    # input_data_scaled = np.repeat(input_data_scaled, 4, axis=1)
                     logging.debug(f"Final input data shape: {input_data_scaled.shape}")
 
+                    output = model.predict(input_data_scaled)
+
                     # Make predictions using the Keras model
-                    predicted_1hour = round(model.predict(input_data_scaled)[0][0], 4)
+                    predicted_1hour = round(scaler_labels.inverse_transform(output.reshape(1, -1)), 4)
                     logging.debug(f"Predicted 1-hour rainfall: {predicted_1hour}")
 
                     # Ensure no negative values in predictions
