@@ -74,9 +74,7 @@ function App() {
         // Debugging: Log prediction data
         console.log("Prediction Data:", latestData.predictions);
   
-        if (
-          !previousSensorDataRef.current || previousSensorDataRef.current.rainfall_15min !== latestData.rainfall_15min // If rainfall data has changed
-        ) {
+        if (!previousSensorDataRef.current || previousSensorDataRef.current.rainfall_15min !== latestData.rainfall_15min) {
           setSensorData(latestData);
           checkRainfallLevel(latestData.rainfall_15min);
         }
