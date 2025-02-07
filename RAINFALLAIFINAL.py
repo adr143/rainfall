@@ -236,8 +236,18 @@ def rainfall_logging():
                     #     lag3
                     # ]], columns=feature_names)
 
-                    # Scale the input data
-                    input_data_scaled = scaler_features.transform(input_data)
+                    rain_mm_column = input_data[:, [0]]  # Extract first column as 2D array
+                    feature_columns = input_data[:, 1:]  # Extract remaining columns
+                    
+                    # Scale each part separately
+                    rain_mm_scaled = scaler_labels.transform(rain_mm_column)  # Scale Rain - mm
+                    feature_scaled = scaler_features.transform(feature_columns)  # Scale other features
+                    
+                    # Combine the scaled parts back together
+                    input_data_scaled = np.hstack((rain_mm_scaled, feature_scaled))
+                    
+                    # Reshape to match LSTM expected input shape
+                    input_data_scaled = input_data_scaled.reshape(1, 4, 5) 
                     logging.debug(f"Scaled input_data: {input_data_scaled}")
 
                     # Reshape back to the expected shape for the model
