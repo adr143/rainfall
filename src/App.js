@@ -5,7 +5,7 @@ import Modal from './Modal';  // Import the Modal component
 import './App.css';
 
 // Ensure the correct URL for the Socket.IO server
-const socket = io("http://192.168.18.3:5000");
+const socket = io("https://green-dog-29.telebit.io");
 
 // Function to get the appropriate CSS class based on the classification
 function getClassificationColor(classification) {
@@ -42,7 +42,7 @@ function App() {
   });
   const [timeData, setTimeData] = useState([]);
   const [rainfallData, setRainfallData] = useState([]);
-  const [modalOpen, setModalOpen] = useState(true);  // State to control modal visibility
+  const [modalOpen, setModalOpen] = useState(false);  // State to control modal visibility
 
   const previousSensorDataRef = useRef(null);
 
@@ -50,7 +50,7 @@ function App() {
     // Function to fetch data
     const fetchInitialData = async () => {
       try {
-        const readingsResponse = await fetch('http://192.168.18.3:5000/last_10_readings');
+        const readingsResponse = await fetch('https://green-dog-29.telebit.io/last_10_readings');
         if (!readingsResponse.ok) {
           throw new Error(`HTTP error! status: ${readingsResponse.status}`);
         }
@@ -60,7 +60,7 @@ function App() {
         setTimeData(reversedData.map(reading => new Date(reading.timestamp).toLocaleTimeString()));
         setRainfallData(reversedData.map(reading => reading.rainfall_15min));
   
-        const latestResponse = await fetch('http://192.168.18.3:5000/latest_readings');
+        const latestResponse = await fetch('https://green-dog-29.telebit.io/latest_readings');
         if (!latestResponse.ok) {
           throw new Error(`HTTP error! status: ${latestResponse.status}`);
         }
@@ -144,7 +144,7 @@ function App() {
     <div className="container">
       <div className="header">
         <ion-icon name="rainy-outline"></ion-icon>
-        <span className="header-text">Rainfall Sensor Dashboard</span>
+        <span className="header-text">Rainfall Dashboard</span>
         <ion-icon name="rainy-outline"></ion-icon>
       </div>
 
